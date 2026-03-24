@@ -1,0 +1,125 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/>::: html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Antrian Klinik Bidan Lulu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; padding: 15px; }
+        header { background: #00a8ff; color: white; padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: center; }
+        
+        /* Tampilan Utama */
+        .label-utama { color: #00a8ff; font-weight: 800; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
+        .nomor-besar { font-size: 7rem; font-weight: 800; color: #00a8ff; line-height: 1; margin: 10px 0; }
+        .nama-pasien { font-size: 1.5rem; font-weight: 600; color: #444; margin-bottom: 10px; }
+        
+        /* Antrian Selanjutnya dengan Bayangan */
+        .next-box { 
+            background: #ffffff; padding: 15px; border-radius: 15px; 
+            display: inline-block; margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Bayangan halus */
+            border: 1px solid #f0f0f0;
+        }
+        .next-text { font-size: 0.85rem; color: #888; font-weight: 600; }
+        .next-number { color: #00a8ff; font-weight: 800; }
+
+        /* Tombol */
+        .btn { display: block; width: 100%; padding: 18px; border-radius: 18px; font-weight: 800; text-decoration: none; border: none; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+        .btn-wa { background: #25d366; color: white; }
+        .btn-admin { background: #eee; color: #888; margin-top: 20px; font-size: 0.8rem; }
+        
+        /* Panel Admin */
+        #panel-admin { display: none; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #00a8ff; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-top: 5px; font-family: inherit; }
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-action { background: #00a8ff; color: white; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Klinik Bidan Lulu</h1>
+        <p>Sistem Antrian Terpadu</p>
+    </header>
+
+    <div class="card">
+        <p class="label-utama">🔴 Sedang Dilayani</p>
+        <div class="nomor-besar" id="view-nomor">01</div>
+        <div class="nama-pasien" id="view-nama">Ny. Siti Aminah</div>
+        
+        <div class="next-box">
+            <p class="next-text">Antrian Selanjutnya: <span class="next-number" id="view-next">02</span></p>
+        </div>
+    </div>
+
+    <div class="card">
+        <p class="label-utama" style="margin-bottom: 10px; font-size: 0.7rem;">Pasien Baru</p>
+        <a href="https://wa.me/628123456789?text=Halo%20Bidan%20Lulu,%20saya%20mau%20daftar" class="btn btn-wa">
+            💬 DAFTAR VIA WHATSAPP
+        </a>
+    </div>
+
+    <div class="card">
+        <button id="btn-login" onclick="loginAdmin()" class="btn btn-admin">🔐 MASUK MODE ADMIN</button>
+
+        <div id="panel-admin">
+            <p style="color:red; font-weight:bold; font-size:0.8rem; margin-bottom:15px;">PENGATURAN ANTRIAN</p>
+            
+            <div class="input-group">
+                <label style="font-size:0.8rem; font-weight:bold;">Nama Pasien Sekarang:</label>
+                <input type="text" id="input-nama" placeholder="Contoh: Ny. Sari">
+            </div>
+
+            <div class="control-grid">
+                <button class="btn-action" onclick="updateManual('kurang')">➖ Nomor</button>
+                <button class="btn-action" onclick="updateManual('tambah')">➕ Nomor</button>
+            </div>
+            
+            <button class="btn btn-wa" style="background:#00a8ff; margin-top:15px;" onclick="simpanPerubahan()">💾 UPDATE TAMPILAN</button>
+            <button onclick="logout()" style="background:none; border:none; color:#999; margin-top:15px; font-size:0.75rem; text-decoration:underline; cursor:pointer;">Keluar Admin</button>
+        </div>
+    </div>
+
+    <script>
+        let currentNo = 1;
+        const pinAdmin = "1234"; // SILAKAN GANTI PIN DI SINI
+
+        function loginAdmin() {
+            let p = prompt("Masukkan PIN Admin:");
+            if (p === pinAdmin) {
+                document.getElementById('panel-admin').style.display = "block";
+                document.getElementById('btn-login').style.display = "none";
+            } else { alert("PIN Salah!"); }
+        }
+
+        function logout() {
+            document.getElementById('panel-admin').style.display = "none";
+            document.getElementById('btn-login').style.display = "block";
+        }
+
+        function updateManual(aksi) {
+            if(aksi === 'tambah') currentNo++;
+            else if(aksi === 'kurang' && currentNo > 1) currentNo--;
+            document.getElementById('view-nomor').innerText = currentNo.toString().padStart(2, '0');
+            document.getElementById('view-next').innerText = (currentNo + 1).toString().padStart(2, '0');
+        }
+
+        function simpanPerubahan() {
+            const namaBaru = document.getElementById('input-nama').value;
+            if (namaBaru.trim() !== "") {
+                document.getElementById('view-nama').innerText = namaBaru;
+                alert("Data berhasil diperbarui!");
+            } else {
+                alert("Masukkan nama pasien terlebih dahulu.");
+            }
+        }
+    </script>
+
+</body>
+</html>
+:::
